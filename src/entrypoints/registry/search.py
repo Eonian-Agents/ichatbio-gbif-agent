@@ -22,8 +22,7 @@ description = """
 
 entrypoint = AgentEntrypoint(
     id="find_datasets",
-    description=description,
-    parameters=None,
+    description=description
 )
 
 

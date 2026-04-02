@@ -1,18 +1,14 @@
 import datetime
 import json
-
-from pydantic import BaseModel, Field, create_model
-from instructor.exceptions import InstructorRetryException
-from tenacity import retry, stop_after_attempt, wait_exponential
 from typing import Type, Optional
 
-from dotenv import load_dotenv
-from src.utils import UserRequestExpansion, IdentifiedOrganism
-from src.models.location import ResolvedLocation, GadmMatchType
+from instructor.core.exceptions import InstructorRetryException
+from pydantic import BaseModel, Field, create_model
+from tenacity import retry, stop_after_attempt, wait_exponential
+
 from src.instructor_client import get_client
-
-load_dotenv()
-
+from src.models.location import ResolvedLocation, GadmMatchType
+from src.utils import UserRequestExpansion, IdentifiedOrganism
 
 CURRENT_DATE = datetime.datetime.now().strftime("%B %d, %Y")
 

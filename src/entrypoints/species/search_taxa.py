@@ -1,26 +1,21 @@
+from typing import List, Optional
+
 from ichatbio.agent_response import ResponseContext, IChatBioAgentProcess
 from ichatbio.types import AgentEntrypoint
+from pydantic import BaseModel, Field
 
-from src.gbif.api import GbifApi
-from src.gbif.fetch import execute_request, execute_multiple_requests
-from src.models.entrypoints import GBIFSpeciesSearchParams, GBIFSpeciesTaxonomicParams
 from src.enums.species import (
     TaxonomicStatusEnum,
     TaxonomicRankEnum,
     QueryFieldEnum,
 )
-from src.models.responses.species import NameUsage, PagingResponseNameUsage
-from src.log import with_logging, logger
+from src.gbif.api import GbifApi
+from src.gbif.fetch import execute_request, execute_multiple_requests
 from src.gbif.parser import parse
-
-from pydantic import BaseModel, Field
-from typing import List, Optional
-
-from dotenv import load_dotenv
 from src.instructor_client import get_client
-
-load_dotenv()
-
+from src.log import with_logging, logger
+from src.models.entrypoints import GBIFSpeciesSearchParams, GBIFSpeciesTaxonomicParams
+from src.models.responses.species import NameUsage, PagingResponseNameUsage
 
 description = f"""
 **Use Case:** Use this entrypoint to retrieve taxonomic information (like the full parent hierarchy, child taxa, or synonyms) that matches with a scientificName or taxonKey. It can also be used to find specific identifiers such as taxonKey, kingdomKey, etc in GBIF Backbone Taxonomy.
@@ -35,13 +30,7 @@ If only name is provided, it will try to first search for the species usageKey i
 
 entrypoint = AgentEntrypoint(
     id="find_taxonomic_information",
-    name="Species Taxonomic Information",
-    description=description,
-    examples=[
-        "Get taxonomic information for species with id 5231190",
-        "Show taxonomic hierarchy and synonyms for species 2476674",
-        "Retrieve taxonomic data for species id 2877951 including children taxa",
-    ],
+    description=description
 )
 
 GBIF_BACKBONE_DATASET_KEY = "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c"

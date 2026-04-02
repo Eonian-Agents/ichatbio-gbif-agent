@@ -1,23 +1,17 @@
-from src.gbif.api import GbifApi
-from src.gbif.fetch import execute_request, execute_multiple_requests
-from ichatbio.agent_response import IChatBioAgentProcess
-
-from src.utils import IdentifiedOrganism
-from src.models.entrypoints import GBIFSpeciesNameMatchParams
+from src.gbif.fetch import execute_multiple_requests
 from src.instructor_client import get_client
+from src.models.entrypoints import GBIFSpeciesNameMatchParams
+from src.utils import IdentifiedOrganism
 
 """
 Module for resolving taxonomic names to GBIF keys automatically.
 """
 
-from dotenv import load_dotenv
 from pydantic import BaseModel, Field
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Tuple
 from src.gbif.api import GbifApi
 from src.gbif.fetch import execute_request
 from ichatbio.agent_response import IChatBioAgentProcess
-
-load_dotenv()
 
 
 class TaxonomicExtraction(BaseModel):

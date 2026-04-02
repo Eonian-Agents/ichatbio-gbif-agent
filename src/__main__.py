@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+
 from .agent import GBIFAgent
 from ichatbio.server import run_agent_server
 from src.log import setup_logger
@@ -5,6 +7,7 @@ from src.log import setup_logger
 
 if __name__ == "__main__":
     # Force logger initialization
+    load_dotenv()
     logger = setup_logger()
     logger.info("TEST: Logging system startup check")
     print("DEBUG: Logging initialized, test message logged")

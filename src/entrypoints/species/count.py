@@ -37,8 +37,7 @@ Limitations: Cannot filter by location, time, or record-level fields; does not g
 
 entrypoint = AgentEntrypoint(
     id="count_species_records",
-    description=description,
-    parameters=None,
+    description=description
 )
 
 

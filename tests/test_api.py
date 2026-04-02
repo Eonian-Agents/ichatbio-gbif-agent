@@ -2,7 +2,7 @@ import pytest
 from src.gbif.api import GbifApi
 from src.gbif.fetch import execute_sync_request
 from src.models.entrypoints import GBIFOccurrenceSearchParams, GBIFOccurrenceFacetsParams
-from src.models.enums.occurence_parameters import (
+from src.models.occurrences import (
     BasisOfRecordEnum,
     ContinentEnum,
     OccurrenceStatusEnum,
@@ -74,6 +74,7 @@ def test_url_building(url_builder):
     assert facets_url.startswith("https://api.gbif.org/v1/occurrence/search?")
     assert "facet=country" in facets_url
     assert "facetMincount=5" in facets_url
+
     # Test portal URL conversion
     api_url = "https://api.gbif.org/v1/occurrence/search?q=test"
     portal_url = url_builder.build_portal_url(api_url)

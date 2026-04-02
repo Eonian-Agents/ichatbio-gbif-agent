@@ -60,8 +60,7 @@ Limitations: Returns aggregated summaries over occurrence records; not the same 
 
 entrypoint = AgentEntrypoint(
     id="count_occurrence_records",
-    description=description,
-    parameters=None,
+    description=description
 )
 
 

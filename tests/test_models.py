@@ -1,9 +1,10 @@
 import pytest
 from pydantic import ValidationError
+
+from enums.occurrences import BasisOfRecordEnum
 from src.models.entrypoints import (
     GBIFOccurrenceSearchParams,
-    GBIFOccurrenceFacetsParams,
-    BasisOfRecordEnum,
+    GBIFOccurrenceFacetsParams
 )
 
 

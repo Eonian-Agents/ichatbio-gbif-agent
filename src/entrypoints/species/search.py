@@ -28,8 +28,7 @@ Limitations: It cannot do searches for specific identifiers such as taxonKey, ki
 
 entrypoint = AgentEntrypoint(
     id="find_species_records",
-    description=description,
-    parameters=None,
+    description=description
 )
 
 

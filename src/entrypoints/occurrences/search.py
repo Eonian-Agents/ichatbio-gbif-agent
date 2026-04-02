@@ -45,8 +45,7 @@ description = """
 
 entrypoint = AgentEntrypoint(
     id="find_occurrence_records",
-    description=description,
-    parameters=None,
+    description=description
 )
 
 
