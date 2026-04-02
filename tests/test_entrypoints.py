@@ -118,7 +118,7 @@ async def test_find_species_taxonomic_information(agent, context, messages):
         await agent.run(
             context,
             "Get taxonomy for Panthera leo",
-            "find_species_taxonomic_information",
+            "find_taxonomic_information",
             None,
         )
 

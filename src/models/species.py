@@ -19,7 +19,7 @@ class SearchFilters(ProductionBaseModel):
     """Full-text search filters for species (q parameter for broad search, qField to narrow to specific fields)."""
 
     q: Optional[str] = Field(
-        None,
+        default=None,
         description="Simple full text search parameter covering scientific and vernacular names, species descriptions, distribution and entire classification. The value can be a simple word or phrase. Wildcards are not supported. Results are ordered by relevance. Only use this parameter if the user's request is vague and none of the other specific parameters are available.",
         examples=[
             "Puma concolor",
@@ -29,7 +29,7 @@ class SearchFilters(ProductionBaseModel):
             "Panthera tigris",
             "endangered cats",
         ],
-    ),
+    )
     qField: Optional[QueryFieldEnum] = Field(
         None,
         description="Use it along with q parameter. Limits the q parameter to search in a specific field. Use it to narrow down the results. Use SCIENTIFIC_NAME when you know or have a good estimate of the scientific name of the species you are searching for. Use VERNACULAR_NAME when you want to find a species using its common name, which can vary by region or language. Use DESCRIPTION when you are looking for a species based on a keyword found in its general description rather than its name.",

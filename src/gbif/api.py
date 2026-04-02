@@ -6,6 +6,8 @@ from typing import Dict, Any
 from urllib.parse import urlencode
 from uuid import UUID
 
+from pydantic import BaseModel
+
 from src.models.entrypoints import (
     GBIFOccurrenceSearchParams,
     GBIFOccurrenceFacetsParams,
@@ -125,41 +127,31 @@ class GbifApi:
         query_string = urlencode(api_params, doseq=True)
         return f"{self.base_url}/grscicoll/institution/search?{query_string}"
 
-    def build_portal_url(self, api_url: str) -> str:
-        """Convert an API URL to its corresponding portal URL by removing facet parameters."""
-        # Split URL into base and query string
-        base_part, *query_part = api_url.split("?")
+    def build_portal_url(self, path: str, params: BaseModel | None) -> str:
+        """Convert an API URL to its corresponding portal URL."""
+        base_url = f"{self.portal_url}/{path}"
+        dict_params = params.model_dump(exclude_none=True) if params is not None else {}
 
-        # Replace API base URL with portal URL base
-        portal_base = base_part.replace(self.base_url, self.portal_url)
-
-        # If no query parameters, return just the base
-        if not query_part:
-            return portal_base
-
-        # Parse query string into dictionary
-        from urllib.parse import parse_qs
-
-        params = parse_qs(query_part[0])
-
-        # Remove facet-related and limit=0 parameters
-        params_to_remove = [
+        # Remove facet-related and limit parameters
+        dict_params = {key: value for key, value in dict_params.items() if key not in  {
             "limit",
             "facet",
             "facetLimit",
             "facetOffset",
-            "facetMinCount",
+            "facetMincount",
             "facetMultiselect",
-        ]
-        for param in params_to_remove:
-            params.pop(param, None)
+        }}
 
-        # Reconstruct query string from remaining parameters
-        if params:
-            query_string = "&".join(
-                f"{key}={value[0]}" if len(value) == 1 else f"{key}={','.join(value)}"
-                for key, value in params.items()
+        # Construct portal URL
+        if dict_params:
+            arguments = "&".join(
+                "&".join((f"{parameter}={v}" for v in _as_list(value)))
+                for parameter, value in dict_params.items()
+                if value
             )
-            return f"{portal_base}?{query_string}"
+            return f"{base_url}?{arguments}&advanced=true"
 
-        return portal_base
+        return base_url
+
+def _as_list(value):
+    return value if isinstance(value, list) else [value]
