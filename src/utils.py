@@ -5,9 +5,10 @@ from typing import Optional, Union
 import dataclasses
 import json
 from src.log import logger
+from src.log_token_usage import log_token_usage
 from src.models.location import Location
 from src.models.bionomia import BionomiaNameRecord, NameMatchResult
-from src.instructor_client import get_client
+from src.instructor_client import get_client, get_model_name
 from enum import Enum
 
 
@@ -130,6 +131,7 @@ async def _generate_resolution_message(
             max_tokens=100,
             temperature=0.2,
         )
+        log_token_usage("_generate_resolution_message", get_model_name(), response)
         message_content = response.message
         return message_content
 
@@ -180,6 +182,7 @@ async def _generate_artifact_description(details: str) -> str:
             max_tokens=60,
             temperature=0.2,
         )
+        log_token_usage("_generate_artifact_description", get_model_name(), response)
         message_content = response.description
         return message_content
     except Exception as e:
@@ -216,6 +219,7 @@ async def _preprocess_user_request(user_request: str):
         response_model=UserRequestExpansion,
         max_retries=2,
     )
+    log_token_usage("_preprocess_user_request", get_model_name(), response)
 
     logger.info(
         f"Identified organisms and locations: {response.model_dump(exclude_none=True)}"
@@ -306,6 +310,7 @@ async def find_best_name_match(
         response_model=NameMatchSelectionResponse,
         max_retries=3,
     )
+    log_token_usage("find_best_name_match", get_model_name(), selection_response)
 
     # Validate IDs and add match_reason and score to original match objects
     top_matches = []

@@ -1,5 +1,6 @@
 from src.gbif.fetch import execute_multiple_requests
-from src.instructor_client import get_client
+from src.instructor_client import get_client, get_model_name
+from src.log_token_usage import log_token_usage
 from src.models.entrypoints import GBIFSpeciesNameMatchParams
 from src.utils import IdentifiedOrganism
 
@@ -124,6 +125,7 @@ async def extract_taxonomic_names(
             messages=messages,
             response_model=TaxonomicExtraction,
         )
+        log_token_usage("extract_taxonomic_names", get_model_name(), response)
         await process.log(f"Taxonomic names extracted", data=response.model_dump())
         return response
     except Exception as e:

@@ -12,8 +12,9 @@ from src.enums.species import (
 from src.gbif.api import GbifApi
 from src.gbif.fetch import execute_request, execute_multiple_requests
 from src.gbif.parser import parse
-from src.instructor_client import get_client
+from src.instructor_client import get_client, get_model_name
 from src.log import with_logging, logger
+from src.log_token_usage import log_token_usage
 from src.models.entrypoints import GBIFSpeciesSearchParams, GBIFSpeciesTaxonomicParams
 from src.models.responses.species import NameUsage, PagingResponseNameUsage
 
@@ -347,5 +348,6 @@ async def __find_best_match(
         ],
         response_model=SpeciesMatch,
     )
+    log_token_usage("search_taxa.__find_best_match", get_model_name(), response)
 
     return response
