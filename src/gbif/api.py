@@ -27,6 +27,18 @@ class GbifApi:
         self.v2_base_url = "https://api.gbif.org/v2"
         self.portal_url = "https://gbif.org"
 
+    RANGE_FIELDS = {
+        "eventDate",
+        "lastInterpreted",
+        "year",
+        "month",
+        "day",
+        "elevation",
+        "depth",
+        "coordinateUncertaintyInMeters",
+        "distanceFromCentroidInMeters",
+    }
+
     def _convert_to_api_params(self, params) -> Dict[str, Any]:
         api_params = {}
 
@@ -35,6 +47,15 @@ class GbifApi:
                 continue
 
             if isinstance(value, list):
+                if not value:
+                    continue
+
+                # For fields that support ranges, if we have a list of length 2,
+                # we should join them with a comma instead of repeating the key.
+                if field_name in self.RANGE_FIELDS and len(value) == 2:
+                    api_params[field_name] = f"{value[0]},{value[1]}"
+                    continue
+
                 processed_values = []
                 for item in value:
                     if hasattr(item, "value"):

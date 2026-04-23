@@ -42,19 +42,19 @@ class GBIFAgent(IChatBioAgent):
         try:
             match entrypoint:
                 case occurrences.search.entrypoint.id:
-                    await occurrences.search.run(context, request)
+                    await occurrences.search.run(context, request, params)
                 case occurrences.count.entrypoint.id:
-                    await occurrences.count.run(context, request)
+                    await occurrences.count.run(context, request, params)
                 case species.search.entrypoint.id:
-                    await species.search.run(context, request)
+                    await species.search.run(context, request, params)
                 case species.count.entrypoint.id:
-                    await species.count.run(context, request)
+                    await species.count.run(context, request, params)
                 case species.search_taxa.entrypoint.id:
-                    await species.search_taxa.run(context, request)
+                    await species.search_taxa.run(context, request, params)
                 case occurrences.search_by_id.entrypoint.id:
-                    await occurrences.search_by_id.run(context, request)
+                    await occurrences.search_by_id.run(context, request, params)
                 case registry.search.entrypoint.id:
-                    await registry.search.run(context, request)
+                    await registry.search.run(context, request, params)
                 case _:
                     error_msg = f"Unknown entrypoint: {entrypoint}"
                     logger.error(f"AGENT_ERROR | {error_msg}")

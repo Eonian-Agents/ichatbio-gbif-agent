@@ -6,6 +6,7 @@ from ichatbio.types import AgentEntrypoint
 
 from src.gbif.api import GbifApi
 from src.gbif.fetch import execute_request
+from src.models.entrypoints import GBIFSpeciesFacetsParams
 from src.models.validators import SpeciesFacetsParamsValidator
 from src.log import with_logging, logger
 from src.gbif.parser import parse
@@ -37,21 +38,22 @@ Limitations: Cannot filter by location, time, or record-level fields; does not g
 
 entrypoint = AgentEntrypoint(
     id="count_species_records",
-    description=description
+    description=description,
+    parameters=GBIFSpeciesFacetsParams,
 )
 
 
 @with_logging("count_species_records")
-async def run(context: ResponseContext, request: str):
+async def run(context: ResponseContext, request: str, params: GBIFSpeciesFacetsParams = None):
     """
     Executes the species counting entrypoint. Counts species name usage records using the provided
     parameters and creates an artifact with the faceted statistical results.
     """
     async with context.begin_process("Requesting GBIF Species statistics") as process:
         AGENT_LOG_ID = f"COUNT_SPECIES_RECORDS_{str(uuid.uuid4())[:6]}"
+        query_start = getattr(params, "query_start", None)
         await process.log(f"Request received: {request} \n\nParsing request...")
-
-        expansion_response = await _preprocess_user_request(request)
+        expansion_response = await _preprocess_user_request(request, query_start=query_start)
         if expansion_response.locations:
             await process.log(
                 "Warning: Request includes locations. This entrypoint cannot search for species records with specific locations."
@@ -77,6 +79,7 @@ async def run(context: ResponseContext, request: str):
             entrypoint.id,
             SpeciesFacetsParamsValidator,
             expansion_response,
+            query_start=query_start,
         )
         logger.info(f"Parameter parsing plan: {response}")
         await process.log(f"Parameter parsing plan", data={"plan": response.plan})

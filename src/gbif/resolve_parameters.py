@@ -1,6 +1,6 @@
 from src.gbif.fetch import execute_multiple_requests
 from src.instructor_client import get_client, get_model_name
-from src.log_token_usage import log_token_usage
+from src.log_token_usage import log_token_usage, call_start_now
 from src.models.entrypoints import GBIFSpeciesNameMatchParams
 from src.utils import IdentifiedOrganism
 
@@ -78,12 +78,12 @@ resolvable_fields = {
 
 
 async def resolve_field_from_request(
-    api: GbifApi, process: IChatBioAgentProcess, field_name: str, user_request: str
+    api: GbifApi, process: IChatBioAgentProcess, field_name: str, user_request: str, query_start: Optional[str] = None
 ) -> Optional[List[int]]:
     if field_name not in resolvable_fields:
         return None
     rank = resolvable_fields[field_name]
-    extraction = await extract_taxonomic_names(process, user_request)
+    extraction = await extract_taxonomic_names(process, user_request, query_start=query_start)
     rank_mapping = {
         "family": extraction.families,
         "genus": extraction.genera,
@@ -109,7 +109,7 @@ async def resolve_field_from_request(
 
 
 async def extract_taxonomic_names(
-    process: IChatBioAgentProcess, user_request: str
+    process: IChatBioAgentProcess, user_request: str, query_start: Optional[str] = None
 ) -> TaxonomicExtraction:
     await process.log("Diving deeper...")
     try:
@@ -121,11 +121,12 @@ async def extract_taxonomic_names(
                 "content": f"Identified taxonomy: {user_request}",
             },
         ]
+        call_start = call_start_now()
         response = await openai_client.chat.completions.create(
             messages=messages,
             response_model=TaxonomicExtraction,
         )
-        log_token_usage("extract_taxonomic_names", get_model_name(), response)
+        log_token_usage("extract_taxonomic_names", get_model_name(), response, query_start=query_start, call_start=call_start)
         await process.log(f"Taxonomic names extracted", data=response.model_dump())
         return response
     except Exception as e:
@@ -173,6 +174,7 @@ async def resolve_pending_search_parameters(
     user_request: str,
     api: GbifApi,
     process: IChatBioAgentProcess,
+    query_start: Optional[str] = None,
 ) -> Tuple[Dict[str, List[int]], List[str]]:
     """
     Attempt to resolve clarification fields automatically.
@@ -191,7 +193,7 @@ async def resolve_pending_search_parameters(
 
     for field in unresolved_params:
         resolved_keys = await resolve_field_from_request(
-            api, process, field, user_request
+            api, process, field, user_request, query_start=query_start
         )
         if resolved_keys:
             resolved[field] = resolved_keys

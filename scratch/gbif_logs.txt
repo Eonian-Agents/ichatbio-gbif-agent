@@ -1,0 +1,114 @@
+INFO:     Started server process [1]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:9999 (Press CTRL+C to quit)
+Deprecated agent card endpoint '/.well-known/agent.json' accessed. Please use '/.well-known/agent-card.json' instead. This endpoint will be removed in a future version.
+DEBUG: Logging initialized, test message logged
+INFO:     172.30.0.7:43794 - "GET /.well-known/agent.json HTTP/1.1" 200 OK
+INFO:     172.30.0.7:32802 - "POST / HTTP/1.1" 200 OK
+
+===========================================
+|| [TOKEN USAGE]
+|| function:           gbif_parser.parse
+|| time:               2026-04-20 23:08:54 UTC
+|| model:              gpt-5-mini-2025-08-07
+|| prompt_tokens:      2256
+|| completion_tokens:  1841
+|| total_tokens:       4097
+|| query_start:        2026-04-20T23:07:42+00:00
+|| cost:               $0.019240
+===========================================
+
+===========================================
+|| [TOKEN USAGE]
+|| function:           search_taxa.__find_best_match
+|| time:               2026-04-20 23:09:06 UTC
+|| model:              gpt-5-mini-2025-08-07
+|| prompt_tokens:      437
+|| completion_tokens:  718
+|| total_tokens:       1155
+|| query_start:        2026-04-20T23:07:42+00:00
+|| cost:               $0.006618
+===========================================
+WARNING:a2a.server.apps.jsonrpc.jsonrpc_app:Deprecated agent card endpoint '/.well-known/agent.json' accessed. Please use '/.well-known/agent-card.json' instead. This endpoint will be removed in a future version.
+INFO:     172.30.0.7:59492 - "GET /.well-known/agent.json HTTP/1.1" 200 OK
+INFO:     172.30.0.7:57744 - "POST / HTTP/1.1" 200 OK
+
+===========================================
+|| [TOKEN USAGE]
+|| function:           _preprocess_user_request
+|| time:               2026-04-20 23:18:29 UTC
+|| model:              gpt-5-mini-2025-08-07
+|| prompt_tokens:      3308
+|| completion_tokens:  1097
+|| total_tokens:       4405
+|| query_start:        2026-04-20T23:17:34+00:00
+|| cost:               $0.015392
+===========================================
+
+===========================================
+|| [TOKEN USAGE]
+|| function:           gbif_parser.parse
+|| time:               2026-04-20 23:18:39 UTC
+|| model:              gpt-5-mini-2025-08-07
+|| prompt_tokens:      13322
+|| completion_tokens:  342
+|| total_tokens:       13664
+|| query_start:        2026-04-20T23:17:34+00:00
+|| cost:               $0.029380
+===========================================
+/home/app/venv/lib/python3.12/site-packages/pydantic/main.py:475: UserWarning: Pydantic serializer warnings:
+  PydanticSerializationUnexpectedValue(Expected `str` - serialized value may not be as expected [field_name='shuffle', input_value=40, input_type=int])
+  return self.__pydantic_serializer__.to_python(
+WARNING:a2a.server.apps.jsonrpc.jsonrpc_app:Deprecated agent card endpoint '/.well-known/agent.json' accessed. Please use '/.well-known/agent-card.json' instead. This endpoint will be removed in a future version.
+INFO:     172.30.0.7:41374 - "GET /.well-known/agent.json HTTP/1.1" 200 OK
+INFO:     172.30.0.7:34166 - "POST / HTTP/1.1" 200 OK
+
+===========================================
+|| [TOKEN USAGE]
+|| function:           _preprocess_user_request
+|| time:               2026-04-20 23:41:34 UTC
+|| model:              gpt-5-mini-2025-08-07
+|| prompt_tokens:      7783
+|| completion_tokens:  2132
+|| total_tokens:       9915
+|| query_start:        2026-04-20T23:39:55+00:00
+|| cost:               $0.032622
+===========================================
+
+===========================================
+|| [TOKEN USAGE]
+|| function:           gbif_parser.parse
+|| time:               2026-04-20 23:41:43 UTC
+|| model:              gpt-5-mini-2025-08-07
+|| prompt_tokens:      13394
+|| completion_tokens:  300
+|| total_tokens:       13694
+|| query_start:        2026-04-20T23:39:55+00:00
+|| cost:               $0.029188
+===========================================
+INFO:     172.30.0.7:37252 - "POST / HTTP/1.1" 200 OK
+
+===========================================
+|| [TOKEN USAGE]
+|| function:           _preprocess_user_request
+|| time:               2026-04-20 23:43:50 UTC
+|| model:              gpt-5-mini-2025-08-07
+|| prompt_tokens:      3335
+|| completion_tokens:  1934
+|| total_tokens:       5269
+|| query_start:        2026-04-20T23:42:21+00:00
+|| cost:               $0.022142
+===========================================
+
+===========================================
+|| [TOKEN USAGE]
+|| function:           gbif_parser.parse
+|| time:               2026-04-20 23:44:01 UTC
+|| model:              gpt-5-mini-2025-08-07
+|| prompt_tokens:      13483
+|| completion_tokens:  314
+|| total_tokens:       13797
+|| query_start:        2026-04-20T23:42:21+00:00
+|| cost:               $0.029478
+===========================================

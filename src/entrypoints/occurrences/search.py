@@ -1,6 +1,6 @@
 import uuid
 import json
-from typing import List
+from typing import List, Optional
 from dataclasses import dataclass
 from ichatbio.agent_response import ResponseContext, IChatBioAgentProcess
 from ichatbio.types import AgentEntrypoint
@@ -45,12 +45,13 @@ description = """
 
 entrypoint = AgentEntrypoint(
     id="find_occurrence_records",
-    description=description
+    description=description,
+    parameters=GBIFOccurrenceSearchParams,
 )
 
 
 @with_logging("find_occurrence_records")
-async def run(context: ResponseContext, request: str):
+async def run(context: ResponseContext, request: str, params: GBIFOccurrenceSearchParams = None):
     """
     Executes the occurrence search entrypoint. Searches for occurrence records using the provided
     parameters and creates an artifact with the results.
@@ -59,9 +60,10 @@ async def run(context: ResponseContext, request: str):
     async with context.begin_process("Requesting GBIF Occurrence Records") as process:
         AGENT_LOG_ID = f"FIND_OCCURRENCE_RECORDS_{str(uuid.uuid4())[:6]}"
         logger.info(f"Agent log ID: {AGENT_LOG_ID}")
-        await process.log(f"Request recieved: {request} \n\nParsing request...")
+        query_start = getattr(params, "query_start", None)
+        await process.log(f"Request received: {request} \n\nParsing request...")
 
-        expansion_response = await _preprocess_user_request(request)
+        expansion_response = await _preprocess_user_request(request, query_start=query_start)
         enrich_locations = []
         if expansion_response.locations:
             enrich_locations = await map_locations_to_gadm(expansion_response.locations)
@@ -137,6 +139,7 @@ async def run(context: ResponseContext, request: str):
             entrypoint.id,
             OccurrenceSearchParamsValidator,
             expansion_response,
+            query_start=query_start,
         )
         await process.log(f"Parameter parsing plan", data={"plan": response.plan})
         logger.info(f"Parameter parsing plan: {response}")
@@ -148,6 +151,7 @@ async def run(context: ResponseContext, request: str):
             organisms=expansion_response.organisms,
             api=api,
             process=process,
+            query_start=query_start,
         )
 
         if param_result.clarification_needed:
@@ -208,6 +212,7 @@ async def run(context: ResponseContext, request: str):
             portal_url = api.build_portal_url("occurrence/search", search_params)
             artifact_description = await _generate_artifact_description(
                 f"User request: {request} Identified organisms in the request: {json.dumps(serialize_organisms(expansion_response.organisms))}, Search parameters: {json.dumps(serialize_for_log(search_params))}, URL: {api_url}",
+                query_start=query_start,
             )
 
             if multi_page_request:
@@ -279,6 +284,7 @@ async def _get_parameters(
     api: GbifApi = None,
     process: IChatBioAgentProcess = None,
     request: str = None,
+    query_start: Optional[str] = None,
 ) -> ParameterResolutionResult:
     """
     Executes the occurrence search entrypoint. Searches for occurrence records using the provided
@@ -297,7 +303,7 @@ async def _get_parameters(
             data={"unresolved_params": response.unresolved_params},
         )
         resolved_fields, unresolved_fields = await resolve_pending_search_parameters(
-            response.unresolved_params or [], request, api, process
+            response.unresolved_params or [], request, api, process, query_start=query_start
         )
         if resolved_fields:
             params_updates.update(resolved_fields)
@@ -308,6 +314,7 @@ async def _get_parameters(
                 response,
                 resolved_fields,
                 unresolved_fields,
+                query_start=query_start,
             )
             return ParameterResolutionResult(
                 search_params=None,

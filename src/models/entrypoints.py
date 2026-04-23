@@ -1,7 +1,7 @@
 from typing import List, Optional
 from pydantic import Field
 
-from src.models.base import ProductionBaseModel
+from src.models.base import ProductionBaseModel, EntrypointBaseModel
 from src import models
 
 from src.enums.common import (
@@ -38,6 +38,7 @@ class GBIFOccurrenceBaseParams(
     models.occurrences.ExperimentalFilters,
     models.occurrences.HighLevelSearchFilters,
     models.common.PaginationParams,
+    EntrypointBaseModel,
 ):
     """
     Base parameters for GBIF occurrence operations.
@@ -104,6 +105,7 @@ class GBIFSpeciesSearchParams(
     models.species.EcologyFilters,
     models.species.QualityFilters,
     models.common.PaginationParams,
+    EntrypointBaseModel,
 ):
     """
     Parameters for GBIF species search.
@@ -138,7 +140,7 @@ class GBIFSpeciesFacetsParams(GBIFSpeciesSearchParams, models.common.FacetParams
     )
 
 
-class GBIFSpeciesTaxonomicParams(ProductionBaseModel):
+class GBIFSpeciesTaxonomicParams(EntrypointBaseModel):
     """Parameters for GBIF species taxonomic information - retrieves comprehensive taxonomic data for a specific species"""
 
     key: Optional[int] = Field(
@@ -212,7 +214,7 @@ class GBIFSpeciesTaxonomicParams(ProductionBaseModel):
     )
 
 
-class GBIFOccurrenceByIdParams(ProductionBaseModel):
+class GBIFOccurrenceByIdParams(EntrypointBaseModel):
     """Parameters for GBIF occurrence by ID - retrieves a single occurrence record by its GBIF ID"""
 
     gbifId: int = Field(
@@ -222,7 +224,7 @@ class GBIFOccurrenceByIdParams(ProductionBaseModel):
     )
 
 
-class GBIFDatasetSearchParams(ProductionBaseModel):
+class GBIFDatasetSearchParams(EntrypointBaseModel):
     """Parameters for GBIF dataset search - full-text search across all datasets with filtering options"""
 
     # Core search parameters
@@ -445,7 +447,7 @@ class GBIFDatasetSearchParams(ProductionBaseModel):
     )
 
 
-class GBIFSpeciesNameMatchParams(ProductionBaseModel):
+class GBIFSpeciesNameMatchParams(EntrypointBaseModel):
     """
     Fuzzy matches scientific names against the Taxonomy with the optional classification provided. If a classification is provided and strict is not set to true, the default matching will also try to match against these if no direct match is found for the name parameter alone.
 

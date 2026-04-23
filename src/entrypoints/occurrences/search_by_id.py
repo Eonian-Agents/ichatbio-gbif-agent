@@ -5,6 +5,7 @@ from ichatbio.types import AgentEntrypoint
 
 from src.gbif.api import GbifApi
 from src.gbif.fetch import execute_request
+from src.models.entrypoints import GBIFOccurrenceByIdParams
 from src.models.validators import OccurrenceSearchByIdParamsValidator
 from src.log import with_logging, logger
 from src.gbif.parser import parse
@@ -23,12 +24,13 @@ description = """
 
 entrypoint = AgentEntrypoint(
     id="find_occurrence_by_id",
-    description=description
+    description=description,
+    parameters=GBIFOccurrenceByIdParams,
 )
 
 
 @with_logging("find_occurrence_by_id")
-async def run(context: ResponseContext, request: str):
+async def run(context: ResponseContext, request: str, params: GBIFOccurrenceByIdParams = None):
     """
     Executes the occurrence by ID entrypoint. Retrieves a single occurrence record using the provided
     GBIF ID and creates an artifact with the result.
@@ -36,10 +38,11 @@ async def run(context: ResponseContext, request: str):
     async with context.begin_process("Requesting GBIF Occurrence by ID") as process:
         AGENT_LOG_ID = f"FIND_OCCURRENCE_BY_ID_{str(uuid.uuid4())[:6]}"
         logger.info(f"Agent log ID: {AGENT_LOG_ID}")
+        query_start = getattr(params, "query_start", None)
         await process.log(f"Request received: {request} \n\nParsing request...")
 
         response = await parse(
-            request, entrypoint.id, OccurrenceSearchByIdParamsValidator
+            request, entrypoint.id, OccurrenceSearchByIdParamsValidator, query_start=query_start
         )
         if response.clarification_needed:
             await process.log(f"Clarification needed: {response.clarification_reason}")

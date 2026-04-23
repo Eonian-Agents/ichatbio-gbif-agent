@@ -5,7 +5,7 @@ from typing import Optional, Union
 import dataclasses
 import json
 from src.log import logger
-from src.log_token_usage import log_token_usage
+from src.log_token_usage import log_token_usage, call_start_now
 from src.models.location import Location
 from src.models.bionomia import BionomiaNameRecord, NameMatchResult
 from src.instructor_client import get_client, get_model_name
@@ -105,6 +105,7 @@ async def _generate_resolution_message(
     response: BaseModel,
     resolved_fields: dict,
     unresolved_fields: list,
+    query_start: Optional[str] = None,
 ) -> str:
 
     class ResolutionMessage(BaseModel):
@@ -125,13 +126,14 @@ async def _generate_resolution_message(
             },
         ]
         client = await get_client()
+        call_start = call_start_now()
         response = await client.chat.completions.create(
             messages=messages,
             response_model=ResolutionMessage,
-            max_tokens=100,
-            temperature=0.2,
+            max_tokens=250,
+            temperature=0,
         )
-        log_token_usage("_generate_resolution_message", get_model_name(), response)
+        log_token_usage("_generate_resolution_message", get_model_name(), response, query_start=query_start, call_start=call_start)
         message_content = response.message
         return message_content
 
@@ -139,10 +141,10 @@ async def _generate_resolution_message(
         logger.error(
             f"LLM extraction failed, falling back to default message: {str(e)}"
         )
-        return "I encountered an error while trying to generate a message about the clarification required from the user about their search."
+        return "I need some clarification regarding the search parameters you provided."
 
 
-async def _generate_artifact_description(details: str) -> str:
+async def _generate_artifact_description(details: str, query_start: Optional[str] = None) -> str:
 
     class ArtifactDescription(BaseModel):
         description: Optional[str] = Field(
@@ -176,20 +178,21 @@ async def _generate_artifact_description(details: str) -> str:
             },
         ]
         client = await get_client()
+        call_start = call_start_now()
         response = await client.chat.completions.create(
             messages=messages,
             response_model=ArtifactDescription,
-            max_tokens=60,
-            temperature=0.2,
+            max_tokens=250,
+            temperature=0,
         )
-        log_token_usage("_generate_artifact_description", get_model_name(), response)
+        log_token_usage("_generate_artifact_description", get_model_name(), response, query_start=query_start, call_start=call_start)
         message_content = response.description
         return message_content
     except Exception as e:
         logger.error(
             f"LLM extraction failed, falling back to default description: {str(e)}"
         )
-        return "I encountered an error while trying to generate a description of the artifact."
+        return "GBIF data retrieval artifact containing records based on search parameters."
 
 
 def serialize_organisms(organisms: list) -> list:
@@ -200,7 +203,7 @@ def serialize_entities(entities: list) -> list:
     return [entity.model_dump(exclude_none=True, mode="json") for entity in entities]
 
 
-async def _preprocess_user_request(user_request: str):
+async def _preprocess_user_request(user_request: str, query_start: Optional[str] = None):
     """
     Translates organism-related terms in user request to scientific nomenclature
     and extracts location information.
@@ -214,12 +217,13 @@ async def _preprocess_user_request(user_request: str):
 
     client = await get_client()
 
+    call_start = call_start_now()
     response = await client.chat.completions.create(
         messages=messages,
         response_model=UserRequestExpansion,
         max_retries=2,
     )
-    log_token_usage("_preprocess_user_request", get_model_name(), response)
+    log_token_usage("_preprocess_user_request", get_model_name(), response, query_start=query_start, call_start=call_start)
 
     logger.info(
         f"Identified organisms and locations: {response.model_dump(exclude_none=True)}"
@@ -270,7 +274,7 @@ For each match in selected_matches:
 
 
 async def find_best_name_match(
-    name: str, bionomia_matches: list[Union[BionomiaNameRecord, dict]]
+    name: str, bionomia_matches: list[Union[BionomiaNameRecord, dict]], query_start: Optional[str] = None
 ) -> NameMatchResult:
     # Convert all matches to BionomiaNameRecord objects and assign match_ids
     matches_with_ids = []
@@ -305,12 +309,13 @@ async def find_best_name_match(
 
     client = await get_client()
 
+    call_start = call_start_now()
     selection_response = await client.chat.completions.create(
         messages=messages,
         response_model=NameMatchSelectionResponse,
         max_retries=3,
     )
-    log_token_usage("find_best_name_match", get_model_name(), selection_response)
+    log_token_usage("find_best_name_match", get_model_name(), selection_response, query_start=query_start, call_start=call_start)
 
     # Validate IDs and add match_reason and score to original match objects
     top_matches = []

@@ -1,8 +1,9 @@
-from __future__ import annotations
 from pydantic import (
     BaseModel,
     ConfigDict,
+    Field,
 )
+from typing import Optional
 
 
 class ProductionBaseModel(BaseModel):
@@ -15,4 +16,11 @@ class ProductionBaseModel(BaseModel):
         from_attributes=True,  # Allow loading from objects with attributes
         populate_by_name=True,  # Allow population by field name OR alias
         validate_default=True,  # Validate default values
+    )
+
+
+class EntrypointBaseModel(ProductionBaseModel):
+    """Base model for all entrypoint parameters."""
+    query_start: Optional[str] = Field(
+        None, description="ISO-8601 wall-clock time (UTC) when the user query started"
     )

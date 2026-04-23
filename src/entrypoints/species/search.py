@@ -6,6 +6,7 @@ from ichatbio.types import AgentEntrypoint
 
 from src.gbif.api import GbifApi
 from src.gbif.fetch import execute_request
+from src.models.entrypoints import GBIFSpeciesSearchParams
 from src.models.validators import SpeciesSearchParamsValidator
 from src.log import with_logging, logger
 from src.gbif.parser import parse
@@ -28,12 +29,13 @@ Limitations: It cannot do searches for specific identifiers such as taxonKey, ki
 
 entrypoint = AgentEntrypoint(
     id="find_species_records",
-    description=description
+    description=description,
+    parameters=GBIFSpeciesSearchParams,
 )
 
 
 @with_logging("find_species_records")
-async def run(context: ResponseContext, request: str):
+async def run(context: ResponseContext, request: str, params: GBIFSpeciesSearchParams = None):
     """
     Executes the species search entrypoint. Searches for species name usages using the provided
     parameters and creates an artifact with the results.
@@ -41,9 +43,10 @@ async def run(context: ResponseContext, request: str):
     async with context.begin_process("Requesting GBIF Species Records") as process:
         AGENT_LOG_ID = f"FIND_SPECIES_RECORDS_{str(uuid.uuid4())[:6]}"
         logger.info(f"Agent log ID: {AGENT_LOG_ID}")
+        query_start = getattr(params, "query_start", None)
         await process.log(f"Request received: {request} \n\nParsing request...")
 
-        expansion_response = await _preprocess_user_request(request)
+        expansion_response = await _preprocess_user_request(request, query_start=query_start)
         if expansion_response.locations:
             await process.log(
                 "Warning: Request include locations. This entrypoint cannot search for species records with specific locations."
@@ -68,6 +71,7 @@ async def run(context: ResponseContext, request: str):
             entrypoint.id,
             SpeciesSearchParamsValidator,
             expansion_response,
+            query_start=query_start,
         )
         logger.info(f"Parameter parsing plan: {response}")
         await process.log(f"Parameter parsing plan", data={"plan": response.plan})

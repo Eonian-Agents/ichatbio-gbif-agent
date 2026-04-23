@@ -5,7 +5,7 @@ from openai import AsyncOpenAI
 
 
 def get_model_name() -> str:
-    return (os.getenv("GBIF_MODEL") or "gpt-4o-mini").strip()
+    return (os.getenv("GBIF_MODEL") or "gpt-5-mini").strip()
 
 
 async def get_client():

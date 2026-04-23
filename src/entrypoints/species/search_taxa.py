@@ -14,7 +14,7 @@ from src.gbif.fetch import execute_request, execute_multiple_requests
 from src.gbif.parser import parse
 from src.instructor_client import get_client, get_model_name
 from src.log import with_logging, logger
-from src.log_token_usage import log_token_usage
+from src.log_token_usage import log_token_usage, call_start_now
 from src.models.entrypoints import GBIFSpeciesSearchParams, GBIFSpeciesTaxonomicParams
 from src.models.responses.species import NameUsage, PagingResponseNameUsage
 
@@ -31,14 +31,15 @@ If only name is provided, it will try to first search for the species usageKey i
 
 entrypoint = AgentEntrypoint(
     id="find_taxonomic_information",
-    description=description
+    description=description,
+    parameters=GBIFSpeciesTaxonomicParams,
 )
 
 GBIF_BACKBONE_DATASET_KEY = "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c"
 
 
 @with_logging("find_taxonomic_information")
-async def run(context: ResponseContext, request: str):
+async def run(context: ResponseContext, request: str, params: GBIFSpeciesTaxonomicParams = None):
     """
     Executes the species taxonomic information entrypoint. Retrieves comprehensive taxonomic
     information for a specific species using its GBIF identifier.
@@ -49,7 +50,8 @@ async def run(context: ResponseContext, request: str):
         await process.log(
             f"Request received: {request} \n\nGenerating iChatBio for GBIF request parameters..."
         )
-        response = await parse(request, entrypoint.id, GBIFSpeciesTaxonomicParams)
+        query_start = getattr(params, "query_start", None)
+        response = await parse(request, entrypoint.id, GBIFSpeciesTaxonomicParams, query_start=query_start)
         if response.clarification_needed:
             await process.log(f"Clarification needed: {response.clarification_reason}")
             await context.reply(f"{response.clarification_reason}")
@@ -74,7 +76,7 @@ async def run(context: ResponseContext, request: str):
                 f"No species id found, searching for species by name: {params.name}"
             )
             species_key = await __search_species_by_name(
-                api, request, params.name, params.rank, params.qField, process
+                api, request, params.name, params.rank, params.qField, process, query_start=query_start
             )
             params = params.model_copy(update={"key": species_key})
 
@@ -264,6 +266,7 @@ async def __search_species_by_name(
     rank: Optional[TaxonomicRankEnum],
     qField: Optional[QueryFieldEnum],
     process: IChatBioAgentProcess,
+    query_start: Optional[str] = None,
 ) -> int:
     await process.log(f"Searching for species by name: {name}")
     # Create the search params for species using the GBIF Backbone Dataset Key at once
@@ -317,7 +320,7 @@ async def __search_species_by_name(
             },
         )
 
-        best_match = await __find_best_match(species_matches, user_query)
+        best_match = await __find_best_match(species_matches, user_query, query_start=query_start)
         await process.log(f"Selected best match: {best_match.model_dump_json()}")
         return best_match.key
 
@@ -330,11 +333,12 @@ async def __search_species_by_name(
 
 
 async def __find_best_match(
-    species_matches: List[SpeciesMatch], user_query: str
+    species_matches: List[SpeciesMatch], user_query: str, query_start: Optional[str] = None
 ) -> SpeciesMatch:
 
     client = await get_client()
 
+    call_start = call_start_now()
     response = await client.chat.completions.create(
         messages=[
             {
@@ -348,6 +352,6 @@ async def __find_best_match(
         ],
         response_model=SpeciesMatch,
     )
-    log_token_usage("search_taxa.__find_best_match", get_model_name(), response)
+    log_token_usage("search_taxa.__find_best_match", get_model_name(), response, query_start=query_start, call_start=call_start)
 
     return response

@@ -5,6 +5,7 @@ from ichatbio.types import AgentEntrypoint
 
 from src.gbif.api import GbifApi
 from src.gbif.fetch import execute_request
+from src.models.entrypoints import GBIFDatasetSearchParams
 from src.models.validators import DatasetSearchParamsValidator
 from src.log import with_logging, logger
 from src.gbif.parser import parse
@@ -22,12 +23,13 @@ description = """
 
 entrypoint = AgentEntrypoint(
     id="find_datasets",
-    description=description
+    description=description,
+    parameters=GBIFDatasetSearchParams,
 )
 
 
 @with_logging("find_datasets")
-async def run(context: ResponseContext, request: str):
+async def run(context: ResponseContext, request: str, params: GBIFDatasetSearchParams = None):
     """
     Executes the dataset search entrypoint. Searches for datasets using the provided
     parameters and creates an artifact with the results.
@@ -35,11 +37,12 @@ async def run(context: ResponseContext, request: str):
     async with context.begin_process("Requesting GBIF Dataset Search") as process:
         AGENT_LOG_ID = f"FIND_DATASETS_{str(uuid.uuid4())[:6]}"
         logger.info(f"Agent log ID: {AGENT_LOG_ID}")
+        query_start = getattr(params, "query_start", None)
         await process.log(
             f"Request received: {request} \n\nGenerating iChatBio for GBIF request parameters..."
         )
 
-        response = await parse(request, entrypoint.id, DatasetSearchParamsValidator)
+        response = await parse(request, entrypoint.id, DatasetSearchParamsValidator, query_start=query_start)
         if response.clarification_needed:
             await process.log(f"Clarification needed: {response.clarification_reason}")
             await context.reply(f"{response.clarification_reason}")

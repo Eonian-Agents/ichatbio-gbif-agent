@@ -4,6 +4,9 @@ from datetime import datetime, timezone
 
 
 _PRICES = {
+    "gpt-5.3-codex": {"in": 1.75, "out": 14.00},
+    "gpt-5.1-codex": {"in": 1.25, "out": 10.00},
+    "gpt-5.1-codex-mini": {"in": 0.25, "out": 2.00},
     "gpt-5": {"in": 1.25, "out": 10.00},
     "gpt-5-mini": {"in": 0.25, "out": 2.00},
     "gpt-5-nano": {"in": 0.05, "out": 0.40},
@@ -12,8 +15,14 @@ _PRICES = {
     "gpt-4.1-nano": {"in": 0.10, "out": 0.40},
     "gpt-4o": {"in": 2.50, "out": 10.00},
     "gpt-4o-mini": {"in": 0.15, "out": 0.60},
+    "gpt-5.4": {"in": 1.25, "out": 10.00},
+    "gpt-5.4-mini": {"in": 0.30, "out": 2.50},
 }
 _FALLBACK = {"in": 2.00, "out": 8.00}
+
+
+def call_start_now() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
 def _price(model: str) -> dict[str, float]:
@@ -21,7 +30,7 @@ def _price(model: str) -> dict[str, float]:
     return _PRICES.get(key, _FALLBACK)
 
 
-def log_token_usage(fn_name: str, model: str, result) -> None:
+def log_token_usage(fn_name: str, model: str, result, query_start: str = None, call_start: str = None) -> None:
     usage = None
     response_model = model
 
@@ -56,6 +65,8 @@ def log_token_usage(fn_name: str, model: str, result) -> None:
             f"|| prompt_tokens:      {prompt_tokens}\n"
             f"|| completion_tokens:  {completion_tokens}\n"
             f"|| total_tokens:       {total_tokens}\n"
+            f"|| call_start:         {call_start or ''}\n"
+            f"|| query_start:        {query_start or ''}\n"
             f"|| cost:               ${cost:.6f}\n"
             f"==========================================="
         ),

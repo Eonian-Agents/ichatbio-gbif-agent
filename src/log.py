@@ -287,7 +287,7 @@ def with_logging(entrypoint_id: str):
 
     def decorator(func: Callable[[ResponseContext, str, P], Any]):
         @wraps(func)
-        async def wrapper(context: ResponseContext, request: str):
+        async def wrapper(context: ResponseContext, request: str, params=None):
             start_time = datetime.now(timezone.utc)
 
             try:
@@ -295,7 +295,7 @@ def with_logging(entrypoint_id: str):
 
                 # Execute with logging context
                 async with wrap_context(context):
-                    result = await func(context, request)
+                    result = await func(context, request, params)
 
                 # Log successful completion
                 duration = (datetime.now(timezone.utc) - start_time).total_seconds()

@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field, create_model
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from src.instructor_client import get_client, get_model_name
-from src.log_token_usage import log_token_usage
+from src.log_token_usage import log_token_usage, call_start_now
 from src.models.location import ResolvedLocation, GadmMatchType
 from src.utils import UserRequestExpansion, IdentifiedOrganism
 
@@ -148,6 +148,7 @@ async def parse(
         entrypoint_id: str,
         parameters_model: Type[T],
         preprocess_information: Optional[UserRequestExpansion] = None,
+        query_start: Optional[str] = None,
 ) -> T:
     response_model = create_response_model(parameters_model)
 
@@ -195,13 +196,14 @@ async def parse(
     instructor_validation_context = {"user_request": request}
 
     try:
+        call_start = call_start_now()
         response = await client.chat.completions.create(
             messages=messages,
             response_model=response_model,
             context=instructor_validation_context,
             max_retries=3,
         )
-        log_token_usage("gbif_parser.parse", get_model_name(), response)
+        log_token_usage("gbif_parser.parse", get_model_name(), response, query_start=query_start, call_start=call_start)
     except InstructorRetryException as e:
         # Access failed attempts for debugging
         print(f"Failed after {e.n_attempts} attempts")
