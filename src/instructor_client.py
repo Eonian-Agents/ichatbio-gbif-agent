@@ -1,12 +1,9 @@
-import os
-
-import instructor
-from openai import AsyncOpenAI
+from llm_config import MODEL, create_instructor_client
 
 
 def get_model_name() -> str:
-    return (os.getenv("GBIF_MODEL") or "gpt-5-mini").strip()
+    return MODEL
 
 
 async def get_client():
-    return instructor.from_openai(AsyncOpenAI(), model=get_model_name())
+    return create_instructor_client()
